@@ -5,12 +5,12 @@ import ru.vsu.cs.oop.edryshov_ad.game.Ship;
 import ru.vsu.cs.oop.edryshov_ad.game.Vector2;
 
 public abstract class Cell implements Comparable<Cell> {
-    Cell right;
-    Cell left;
-    Cell top;
-    Cell bottom;
+    private Cell right;
+    private Cell left;
+    private Cell top;
+    private Cell bottom;
 
-    final Vector2 position;
+    private final Vector2 position;
 
     Cell(int x, int y) {
         this.position = new Vector2(x, y);

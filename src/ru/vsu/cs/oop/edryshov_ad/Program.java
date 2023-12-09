@@ -7,8 +7,9 @@ import ru.vsu.cs.oop.edryshov_ad.game.field.Cell;
 import ru.vsu.cs.oop.edryshov_ad.game.field.Field;
 import ru.vsu.cs.oop.edryshov_ad.game.field.Rock;
 import ru.vsu.cs.oop.edryshov_ad.game.field.Water;
-import ru.vsu.cs.oop.edryshov_ad.game.player.DefaultPlayerController;
 import ru.vsu.cs.oop.edryshov_ad.game.player.Player;
+import ru.vsu.cs.oop.edryshov_ad.game.player.SailingForwardController;
+import ru.vsu.cs.oop.edryshov_ad.game.player.TurningAroundController;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -19,22 +20,29 @@ public class Program {
     public static void main(String[] args) {
         Game game = getExampleGame(3);
 
-        while (!game.isGameEnded()) {
+        int maxCount = 50;
+        int i = 0;
+
+        System.out.println(game);
+
+        while (!game.isGameEnded() && i < maxCount) {
             game.playStep();
             System.out.println(game);
+            i++;
         }
 
         System.out.println(game.getWinner());
     }
 
     private static Game getExampleGame(int playerCount) {
-        Field field = getExampleField(1 + playerCount * 2, 1 + playerCount * 2);
+        Field field = getExampleField(3 + playerCount * 2, 3 + playerCount * 2);
         Queue<Player> players = getExamplePlayers(playerCount);
 
-        Cell curr = field.getStartCell().getBottom().getRight();
+        Cell curr = field.getStartCell().getBottom().getBottom().getRight().getRight();
         LinkedList<ArrayList<Water>> shipsToPlace = new LinkedList<>();
         for (int i = 0; i < playerCount; i++) {
-            ArrayList<Water> list = new ArrayList<>(1);
+            ArrayList<Water> list = new ArrayList<>(2);
+            list.add((Water) curr.getBottom());
             list.add((Water) curr);
             shipsToPlace.add(list);
             curr = curr.getRight().getRight();
@@ -47,7 +55,7 @@ public class Program {
             ArrayList<Water> placement = placementIterator.next();
 
             Ship ship = new Ship(
-                    i, 3, 2, 100, 1, 1,
+                    i, 3, 2, 100, 2, 1,
                     field, player, new Vector2(0, -1), placement
             );
 
@@ -107,7 +115,11 @@ public class Program {
     private static Queue<Player> getExamplePlayers(int count) {
         Queue<Player> players = new LinkedList<>();
         for (int i = 0; i < count; i++) {
-            players.add(new Player(i, new DefaultPlayerController()));
+            if (i == 0) {
+                players.add(new Player(i, new TurningAroundController()));
+            } else {
+                players.add(new Player(i, new SailingForwardController()));
+            }
         }
         return players;
     }

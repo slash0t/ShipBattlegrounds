@@ -145,7 +145,7 @@ public class Ship implements Comparable<Ship> {
     private SailingResult getSailingResultInRect(Cell startCell, int size, Vector2 horizontalDir, Vector2 verticalDir) {
         SailingResult result = SailingResult.SAILED;
         Cell anchorCell = startCell;
-        for (int i = 0; i < size && result == SailingResult.SAILED; i++) {
+        for (int i = 1; i < size && result == SailingResult.SAILED; i++) {
             anchorCell = anchorCell.getFromDirection(horizontalDir);
 
             Cell curr = anchorCell;
@@ -175,7 +175,6 @@ public class Ship implements Comparable<Ship> {
         int lowerRectSize = size - size / 2;
 
         Vector2 newDirection = direction.getRotated(right);
-        Vector2 oppositeDirection = new Vector2(-newDirection.getX(), -newDirection.getX());
 
         SailingResult upperResult = getSailingResultInRect(
                 midCell, upperRectSize,
@@ -183,7 +182,7 @@ public class Ship implements Comparable<Ship> {
         );
         SailingResult lowerResult = getSailingResultInRect(
                 midCell, lowerRectSize,
-                oppositeDirection, direction.getNegative()
+                newDirection.getNegative(), direction.getNegative()
         );
 
         if (upperResult == SailingResult.BUMPED || lowerResult == SailingResult.BUMPED) {
@@ -196,7 +195,8 @@ public class Ship implements Comparable<Ship> {
                 newHead = newHead.getFromDirection(newDirection);
             }
 
-            cellPositions = field.moveShipTo(this, newHead, oppositeDirection);
+            cellPositions = field.moveShipTo(this, newHead, newDirection.getNegative());
+            direction = newDirection;
         }
     }
 

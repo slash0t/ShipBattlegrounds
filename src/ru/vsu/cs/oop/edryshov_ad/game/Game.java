@@ -1,6 +1,5 @@
 package ru.vsu.cs.oop.edryshov_ad.game;
 
-import ru.vsu.cs.oop.edryshov_ad.game.field.Cell;
 import ru.vsu.cs.oop.edryshov_ad.game.field.Field;
 import ru.vsu.cs.oop.edryshov_ad.game.player.Player;
 import ru.vsu.cs.oop.edryshov_ad.game.process.GameStep;
