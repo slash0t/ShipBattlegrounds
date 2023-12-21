@@ -82,9 +82,9 @@ public class Game {
         if (upcomingCommands.isEmpty()) {
             int stepsPlayed = playPlayerStep();
 
-            for (int i = 0; i < stepsPlayed - 1; i++) {
-                playStepBack();
-            }
+//            for (int i = 0; i < stepsPlayed - 1; i++) {
+//                playStepBack();
+//            }
 
             return;
         }
@@ -120,7 +120,7 @@ public class Game {
 
         int stepsPossible = 0;
         Cell now = field.getShipHead(ship);
-        Vector2 direction = ship.getDirection();
+        CardinalDirection direction = ship.getDirection();
 
         boolean stopped = false;
         while (stepsPossible < Math.min(range, ship.getSailRange()) && !stopped) {
@@ -164,7 +164,7 @@ public class Game {
         }
 
         int size = ship.getSize();
-        Vector2 direction = ship.getDirection();
+        CardinalDirection direction = ship.getDirection();
 
         if (size == 1) {
             ship.setDirection(direction.getRotated(right));
@@ -178,7 +178,7 @@ public class Game {
         int upperRectSize = size / 2 + 1;
         int lowerRectSize = size - size / 2;
 
-        Vector2 newDirection = direction.getRotated(right);
+        CardinalDirection newDirection = direction.getRotated(right);
 
         SailingResult upperResult = field.getSailingResultInRect(
                 ship, midCell, upperRectSize,

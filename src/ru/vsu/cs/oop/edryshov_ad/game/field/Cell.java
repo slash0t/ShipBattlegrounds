@@ -1,5 +1,6 @@
 package ru.vsu.cs.oop.edryshov_ad.game.field;
 
+import ru.vsu.cs.oop.edryshov_ad.game.CardinalDirection;
 import ru.vsu.cs.oop.edryshov_ad.game.SailingResult;
 import ru.vsu.cs.oop.edryshov_ad.game.Ship;
 import ru.vsu.cs.oop.edryshov_ad.game.Vector2;
@@ -34,21 +35,23 @@ public abstract class Cell implements Comparable<Cell> {
         return bottom;
     }
 
-    public Cell getFromDirection(Vector2 direction) {
-        int x = direction.getX(), y = direction.getY();
-
-        if (x * x + y * y != 1) {
-            return null;
-        }
-
-        if (x == 1) {
-            return getRight();
-        } else if (x == -1) {
-            return getLeft();
-        } else if (y == 1) {
-            return getTop();
-        } else {
-            return getBottom();
+    public Cell getFromDirection(CardinalDirection direction) {
+        switch (direction) {
+            case EAST -> {
+                return getRight();
+            }
+            case WEST -> {
+                return getLeft();
+            }
+            case NORTH -> {
+                return getTop();
+            }
+            case SOUTH -> {
+                return getBottom();
+            }
+            default -> {
+                return this;
+            }
         }
     }
 

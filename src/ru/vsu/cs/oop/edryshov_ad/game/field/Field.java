@@ -1,5 +1,6 @@
 package ru.vsu.cs.oop.edryshov_ad.game.field;
 
+import ru.vsu.cs.oop.edryshov_ad.game.CardinalDirection;
 import ru.vsu.cs.oop.edryshov_ad.game.SailingResult;
 import ru.vsu.cs.oop.edryshov_ad.game.Ship;
 import ru.vsu.cs.oop.edryshov_ad.game.Vector2;
@@ -23,10 +24,6 @@ public class Field {
 
     public Cell getStartCell() {
         return startCell;
-    }
-
-    public Map<Ship, ArrayList<Water>> getShipMap() {
-        return shipMap;
     }
 
     public ArrayList<Water> getShipCells(Ship ship) {
@@ -64,7 +61,7 @@ public class Field {
         shipMap.put(ship, cells);
     }
 
-    public Water moveShipTo(Ship ship, Cell startCell, Vector2 direction) throws FieldException {
+    public void moveShipTo(Ship ship, Cell startCell, CardinalDirection direction) throws FieldException {
         LinkedList<Water> newPositions = new LinkedList<>();
         Cell currCell = startCell;
         for (int i = 0; i < ship.getSize(); i++) {
@@ -84,12 +81,11 @@ public class Field {
         for (Water water : newPositions) {
             addShipCoordinate(ship, water);
         }
-        return newPositions.getFirst();
     }
 
     public SailingResult getSailingResultInRect(
             Ship ship, Cell startCell,
-            int size, Vector2 horizontalDir, Vector2 verticalDir
+            int size, CardinalDirection horizontalDir, CardinalDirection verticalDir
     ) {
         SailingResult result = SailingResult.SAILED;
         Cell anchorCell = startCell;
@@ -118,16 +114,16 @@ public class Field {
                 if (curr instanceof Water water) {
                     Ship ship = water.getShip();
                     if (ship == null) {
-                        sb.append("~");
+                        sb.append("\uD83C\uDF0A");
                     } else {
                         if (ship.isSunk()) {
-                            sb.append("X");
+                            sb.append("❌");
                         } else {
-                            sb.append("S");
+                            sb.append("\uD83D\uDEA2");
                         }
                     }
                 } else {
-                    sb.append("B");
+                    sb.append("\uD83D\uDEAB");
                 }
                 curr = curr.getRight();
             }

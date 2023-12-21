@@ -1,9 +1,6 @@
 package ru.vsu.cs.oop.edryshov_ad;
 
-import ru.vsu.cs.oop.edryshov_ad.game.Game;
-import ru.vsu.cs.oop.edryshov_ad.game.GameState;
-import ru.vsu.cs.oop.edryshov_ad.game.Ship;
-import ru.vsu.cs.oop.edryshov_ad.game.Vector2;
+import ru.vsu.cs.oop.edryshov_ad.game.*;
 import ru.vsu.cs.oop.edryshov_ad.game.field.Cell;
 import ru.vsu.cs.oop.edryshov_ad.game.field.Field;
 import ru.vsu.cs.oop.edryshov_ad.game.field.Rock;
@@ -55,13 +52,15 @@ public class Program {
             Player player = playerIterator.next();
             ArrayList<Water> placement = placementIterator.next();
 
-            Ship ship = new Ship(
-                    i, 3, 2, 100, 2, 1,
-                    new Vector2(0, -1)
-            );
+            Ship ship = new Ship.Builder(i, 2, CardinalDirection.SOUTH).
+                    withFiringRange(3).
+                    withSailRange(2).
+                    withMinSailDepth(100).
+                    withStartHealth(1).
+                    build();
 
             player.addActiveShip(ship);
-            field.moveShipTo(ship, placement.get(0), new Vector2(0, 1));
+            field.moveShipTo(ship, placement.get(0), CardinalDirection.NORTH);
         }
 
         return new Game(field, players);

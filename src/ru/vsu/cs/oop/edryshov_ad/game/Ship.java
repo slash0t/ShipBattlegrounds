@@ -9,22 +9,18 @@ public class Ship implements Comparable<Ship> {
 
     private int health;
 
-    private Vector2 direction;
+    private CardinalDirection direction;
 
-    //TODO сделать билдер с дефолтными значениями
-    public Ship(
-            int id, int firingRange, int sailRange,
-            int minSailDepth, int size, int health,
-            Vector2 direction
-    ) {
-        this.id = id;
-        this.firingRange = firingRange;
-        this.sailRange = sailRange;
-        this.minSailDepth = minSailDepth;
-        this.size = size;
-        this.health = health;
+    private Ship(Builder builder) {
+        this.id = builder.id;
+        this.size = builder.size;
 
-        this.direction = direction;
+        this.direction = builder.direction;
+
+        this.firingRange = builder.firingRange;
+        this.sailRange = builder.sailRange;
+        this.minSailDepth = builder.minSailDepth;
+        this.health = builder.startHealth;
     }
 
     public int getId() {
@@ -47,7 +43,7 @@ public class Ship implements Comparable<Ship> {
         return health;
     }
 
-    public Vector2 getDirection() {
+    public CardinalDirection getDirection() {
         return direction;
     }
 
@@ -59,7 +55,7 @@ public class Ship implements Comparable<Ship> {
         return health <= 0;
     }
 
-    public void setDirection(Vector2 direction) {
+    public void setDirection(CardinalDirection direction) {
         this.direction = direction;
     }
 
@@ -83,5 +79,51 @@ public class Ship implements Comparable<Ship> {
     @Override
     public String toString() {
         return String.format("Ship %d", id);
+    }
+
+    public static class Builder {
+        private final int id;
+        private final int size;
+        private final CardinalDirection direction;
+
+        private int firingRange;
+        private int sailRange;
+        private int minSailDepth;
+        private int startHealth;
+
+        public Builder(int id, int size, CardinalDirection direction) {
+            this.id = id;
+            this.size = size;
+            this.direction = direction;
+
+            this.firingRange = 2;
+            this.sailRange = 2;
+            this.minSailDepth = 100;
+            this.startHealth = size;
+        }
+
+        public Builder withFiringRange(int firingRange) {
+            this.firingRange = firingRange;
+            return this;
+        }
+
+        public Builder withSailRange(int sailRange) {
+            this.sailRange = sailRange;
+            return this;
+        }
+
+        public Builder withMinSailDepth(int minSailDepth) {
+            this.minSailDepth = minSailDepth;
+            return this;
+        }
+
+        public Builder withStartHealth(int startHealth) {
+            this.startHealth = startHealth;
+            return this;
+        }
+
+        public Ship build() {
+            return new Ship(this);
+        }
     }
 }
