@@ -1,11 +1,11 @@
 package ru.vsu.cs.oop.edryshov_ad.game.player;
 
-import ru.vsu.cs.oop.edryshov_ad.game.process.GameStep;
-import ru.vsu.cs.oop.edryshov_ad.game.Ship;
 import ru.vsu.cs.oop.edryshov_ad.game.field.Field;
+import ru.vsu.cs.oop.edryshov_ad.game.process.CommandCreator;
+import ru.vsu.cs.oop.edryshov_ad.game.process.ShipCommand;
 
-import java.util.Collection;
+import java.util.Queue;
 
 public interface PlayerController {
-    GameStep doMove(Player player, Field field, Collection<Ship> ships);
+    Queue<ShipCommand> doMove(Player player, CommandCreator commandCreator, Field field);
 }

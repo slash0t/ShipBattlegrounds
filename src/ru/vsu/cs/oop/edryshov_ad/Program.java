@@ -1,6 +1,7 @@
 package ru.vsu.cs.oop.edryshov_ad;
 
 import ru.vsu.cs.oop.edryshov_ad.game.Game;
+import ru.vsu.cs.oop.edryshov_ad.game.GameState;
 import ru.vsu.cs.oop.edryshov_ad.game.Ship;
 import ru.vsu.cs.oop.edryshov_ad.game.Vector2;
 import ru.vsu.cs.oop.edryshov_ad.game.field.Cell;
@@ -25,13 +26,13 @@ public class Program {
 
         System.out.println(game);
 
-        while (!game.isGameEnded() && i < maxCount) {
-            game.playStep();
+        while (game.getGameState() == GameState.ONGOING && i < maxCount) {
+            game.playStepForward();
             System.out.println(game);
             i++;
         }
 
-        System.out.println(game.getWinner());
+        System.out.println(game.getWinners());
     }
 
     private static Game getExampleGame(int playerCount) {
@@ -56,10 +57,10 @@ public class Program {
 
             Ship ship = new Ship(
                     i, 3, 2, 100, 2, 1,
-                    field, player, new Vector2(0, -1), placement
+                    new Vector2(0, -1)
             );
 
-            player.assignShip(ship);
+            player.addActiveShip(ship);
             field.moveShipTo(ship, placement.get(0), new Vector2(0, 1));
         }
 
@@ -116,7 +117,7 @@ public class Program {
         Queue<Player> players = new LinkedList<>();
         for (int i = 0; i < count; i++) {
             if (i == 0) {
-                players.add(new Player(i, new TurningAroundController()));
+                players.add(new Player(i,  new TurningAroundController()));
             } else {
                 players.add(new Player(i, new SailingForwardController()));
             }

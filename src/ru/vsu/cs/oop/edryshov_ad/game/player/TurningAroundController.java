@@ -2,24 +2,23 @@ package ru.vsu.cs.oop.edryshov_ad.game.player;
 
 import ru.vsu.cs.oop.edryshov_ad.game.Ship;
 import ru.vsu.cs.oop.edryshov_ad.game.field.Field;
-import ru.vsu.cs.oop.edryshov_ad.game.process.GameStep;
-import ru.vsu.cs.oop.edryshov_ad.game.process.ShipAction;
-import ru.vsu.cs.oop.edryshov_ad.game.process.TurnAction;
+import ru.vsu.cs.oop.edryshov_ad.game.process.CommandCreator;
+import ru.vsu.cs.oop.edryshov_ad.game.process.ShipCommand;
 
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class TurningAroundController  implements PlayerController {
+public class TurningAroundController implements PlayerController {
     @Override
-    public GameStep doMove(Player player, Field field, Collection<Ship> ships) {
-        Queue<ShipAction> actions = new LinkedList<>();
+    public Queue<ShipCommand> doMove(Player player, CommandCreator commandCreator, Field field) {
+        Queue<ShipCommand> commands = new LinkedList<>();
 
-        for (Ship ship : ships) {
-            actions.add(new TurnAction(ship, true));
-            ship.turn(true);
+        for (Ship ship : player.getActiveShips()) {
+            ShipCommand command = commandCreator.createTurnCommand(player, ship, true);
+            command.execute();
+            commands.add(command);
         }
 
-        return new GameStep(player, actions);
+        return commands;
     }
 }

@@ -9,7 +9,7 @@ import java.util.*;
 public class Field {
     private final Cell startCell;
 
-    private Map<Ship, Set<Water>> shipMap;
+    private final Map<Ship, ArrayList<Water>> shipMap;
 
     private final int width;
     private final int height;
@@ -25,12 +25,16 @@ public class Field {
         return startCell;
     }
 
-    public Map<Ship, Set<Water>> getShipMap() {
+    public Map<Ship, ArrayList<Water>> getShipMap() {
         return shipMap;
     }
 
-    public Set<Water> getShipCells(Ship ship) {
+    public ArrayList<Water> getShipCells(Ship ship) {
         return shipMap.get(ship);
+    }
+
+    public Water getShipHead(Ship ship) {
+        return shipMap.get(ship).get(0);
     }
 
     public int getWidth() {
@@ -54,14 +58,14 @@ public class Field {
     }
 
     private void addShipCoordinate(Ship ship, Water water) {
-        Set<Water> cells = shipMap.getOrDefault(ship, new TreeSet<>());
+        ArrayList<Water> cells = shipMap.getOrDefault(ship, new ArrayList<>());
         cells.add(water);
         water.setShip(ship);
         shipMap.put(ship, cells);
     }
 
-    public ArrayList<Water> moveShipTo(Ship ship, Cell startCell, Vector2 direction) throws FieldException {
-        ArrayList<Water> newPositions = new ArrayList<>(ship.getSize());
+    public Water moveShipTo(Ship ship, Cell startCell, Vector2 direction) throws FieldException {
+        LinkedList<Water> newPositions = new LinkedList<>();
         Cell currCell = startCell;
         for (int i = 0; i < ship.getSize(); i++) {
             if (currCell.canShipSailThrough(ship) != SailingResult.SAILED) {
@@ -80,7 +84,27 @@ public class Field {
         for (Water water : newPositions) {
             addShipCoordinate(ship, water);
         }
-        return newPositions;
+        return newPositions.getFirst();
+    }
+
+    public SailingResult getSailingResultInRect(
+            Ship ship, Cell startCell,
+            int size, Vector2 horizontalDir, Vector2 verticalDir
+    ) {
+        SailingResult result = SailingResult.SAILED;
+        Cell anchorCell = startCell;
+        for (int i = 1; i < size && result == SailingResult.SAILED; i++) {
+            anchorCell = anchorCell.getFromDirection(horizontalDir);
+
+            Cell curr = anchorCell;
+
+            for (int j = 0; j < size && result == SailingResult.SAILED; j++) {
+                result = curr.canShipSailThrough(ship);
+                curr = curr.getFromDirection(verticalDir);
+            }
+        }
+
+        return result;
     }
 
     @Override
