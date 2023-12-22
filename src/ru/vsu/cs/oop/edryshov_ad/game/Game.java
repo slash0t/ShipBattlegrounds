@@ -27,9 +27,7 @@ public class Game {
         this.players = players;
 
         CommandCreator creator = new CommandCreator(this);
-        for (Player player : players) {
-            player.setCommandCreator(creator);
-        }
+        players.forEach(player -> player.setCommandCreator(creator));
 
         this.commandsHistory = new Stack<>();
         this.upcomingCommands = new Stack<>();
@@ -57,12 +55,15 @@ public class Game {
 
         commandsHistory.addAll(commandsQueue);
 
-        players.add(player);
+        if (!player.lost()) {
+            players.add(player);
+        }
 
-        Player winner = findWinner();
-        if (winner != null) {
+        if (players.size() == 1) {
             gameState = GameState.ENDED_WITH_VICTORY;
-            winners.add(winner);
+            winners.add(players.peek());
+        } else if (players.size() == 0) {
+            gameState = GameState.ENDED_WITH_DRAW;
         }
 
         return commandsQueue.size();
@@ -94,37 +95,15 @@ public class Game {
         commandsHistory.add(command);
     }
 
-    private Player findWinner() {
-        Player winner = null;
-
-        for (Player player : players) {
-            if (player.lost()) {
-                continue;
-            }
-
-            if (winner == null) {
-                winner = player;
-            } else {
-                return null;
-            }
-        }
-
-        //TODO ситуация ничьей
-        return winner;
-    }
-
     private void changeShipHealth(Ship ship, int difference) {
-        Player owner = null;
-        for (Player player : players) {
-            if (player.containsShip(ship)) {
-                owner = player;
-            }
-        }
+        Optional<Player> owner = players.stream().
+                filter(p -> p.containsShip(ship)).
+                findAny();
 
-        if (owner == null) {
+        if (owner.isEmpty()) {
             return;
         }
-        changeShipHealth(owner, ship, difference);
+        changeShipHealth(owner.get(), ship, difference);
     }
 
     private void changeShipHealth(Player player, Ship ship, int difference) {
@@ -140,12 +119,10 @@ public class Game {
     private void setShipAlive(Player player, Ship ship) {
         player.removeDeadShip(ship);
 
-        SailingResult result = SailingResult.SAILED;
-        for (Water water : field.getShipCells(ship)) {
-            if (water.canShipSailThrough(ship) == SailingResult.STUCK) {
-                result = SailingResult.STUCK;
-            }
-        }
+        Optional<Water> water = field.getShipCells(ship).stream()
+                .filter(w -> w.canShipSailThrough(ship) == SailingResult.STUCK)
+                .findAny();
+        SailingResult result = water.isPresent() ? SailingResult.STUCK : SailingResult.SAILED;
 
         if (result == SailingResult.SAILED) {
             player.addActiveShip(ship);
@@ -159,6 +136,10 @@ public class Game {
         player.removeStuckShip(ship);
 
         player.removeDeadShip(ship);
+
+        if (player.lost()) {
+            players.remove(player);
+        }
     }
 
     public int sailShip(Player player, Ship ship, int range) throws FieldException {

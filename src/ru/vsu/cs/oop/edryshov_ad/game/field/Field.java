@@ -77,9 +77,7 @@ public class Field {
         }
 
         deleteShip(ship);
-        for (Water water : newPositions) {
-            addShipCoordinate(ship, water);
-        }
+        newPositions.forEach(water -> addShipCoordinate(ship, water));
     }
 
     public SailingResult getSailingResultInRect(
