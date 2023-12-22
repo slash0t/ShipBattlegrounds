@@ -60,6 +60,17 @@ public class Field {
         shipMap.put(ship, cells);
     }
 
+    public Cell getCellFromCoordinates(int x, int y) {
+        Cell cell = startCell;
+        for (int i = 0; i < x; i++) {
+            cell = cell.getRight();
+        }
+        for (int i = 0; i < y; i++) {
+            cell = cell.getTop();
+        }
+        return cell;
+    }
+
     public void moveShipTo(Ship ship, Cell startCell, CardinalDirection direction) throws FieldException {
         LinkedList<Water> newPositions = new LinkedList<>();
         Cell currCell = startCell;
@@ -103,6 +114,11 @@ public class Field {
     @Override
     public String toString() {
         Cell anchor = startCell;
+
+        for (int i = 0; i < height - 1; i++) {
+            anchor = anchor.getTop();
+        }
+
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < height; i++) {

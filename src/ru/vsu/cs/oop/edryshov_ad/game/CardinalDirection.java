@@ -77,4 +77,22 @@ public enum CardinalDirection {
             return getLeft();
         }
     }
+
+    public static CardinalDirection getFromString(String string) {
+        switch (string) {
+            case "NORTH" -> {
+                return NORTH;
+            }
+            case "SOUTH" -> {
+                return SOUTH;
+            }
+            case "WEST" -> {
+                return WEST;
+            }
+            case "EAST" -> {
+                return EAST;
+            }
+        }
+        return NORTH;
+    }
 }
