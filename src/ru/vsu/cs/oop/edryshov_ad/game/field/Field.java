@@ -3,7 +3,6 @@ package ru.vsu.cs.oop.edryshov_ad.game.field;
 import ru.vsu.cs.oop.edryshov_ad.game.CardinalDirection;
 import ru.vsu.cs.oop.edryshov_ad.game.SailingResult;
 import ru.vsu.cs.oop.edryshov_ad.game.Ship;
-import ru.vsu.cs.oop.edryshov_ad.game.Vector2;
 
 import java.util.*;
 

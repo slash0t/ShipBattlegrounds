@@ -20,6 +20,6 @@ public class ShootCommand extends ShipCommand {
 
     @Override
     void undo(Game game) {
-        game.shipUndoShoot(getPlayer(), getShip(), target);
+        game.shipUndoShoot(getShip(), target);
     }
 }

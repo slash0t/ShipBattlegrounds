@@ -6,6 +6,7 @@ import ru.vsu.cs.oop.edryshov_ad.game.player.Player;
 
 public class SailCommand extends ShipCommand {
     private final int range;
+    private int sailedRange;
 
     public SailCommand(Player player, Ship ship, Game game, int range) {
         super(player, ship, game);
@@ -14,11 +15,11 @@ public class SailCommand extends ShipCommand {
 
     @Override
     void execute(Game game) {
-        game.sailShip(getPlayer(), getShip(), range);
+        sailedRange = game.sailShip(getPlayer(), getShip(), range);
     }
 
     @Override
     void undo(Game game) {
-        game.sailShipBack(getPlayer(), getShip(), range);
+        game.sailShipBack(getPlayer(), getShip(), range, sailedRange);
     }
 }

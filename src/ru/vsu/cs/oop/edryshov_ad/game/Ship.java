@@ -60,7 +60,7 @@ public class Ship implements Comparable<Ship> {
     }
 
     public void changeHealth(int difference) {
-        this.health = Math.max(0, health + difference);
+        this.health += difference;
     }
 
     @Override

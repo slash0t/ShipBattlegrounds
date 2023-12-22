@@ -15,12 +15,12 @@ public class Game {
 
     private final Field field;
     private final Queue<Player> players;
+    private final List<Player> winners;
 
     private final Stack<ShipCommand> commandsHistory;
     private final Stack<ShipCommand> upcomingCommands;
 
     private GameState gameState;
-    private List<Player> winners;
 
     public Game(Field field, Queue<Player> players) {
         this.field = field;
@@ -65,7 +65,7 @@ public class Game {
             winners.add(winner);
         }
 
-        return commandsHistory.size();
+        return commandsQueue.size();
     }
 
     public void playStepBack() {
@@ -82,9 +82,9 @@ public class Game {
         if (upcomingCommands.isEmpty()) {
             int stepsPlayed = playPlayerStep();
 
-//            for (int i = 0; i < stepsPlayed - 1; i++) {
-//                playStepBack();
-//            }
+            for (int i = 0; i < stepsPlayed - 1; i++) {
+                playStepBack();
+            }
 
             return;
         }
@@ -113,9 +113,57 @@ public class Game {
         return winner;
     }
 
-    public void sailShip(Player player, Ship ship, int range) throws FieldException {
-        if (!player.containsActiveShip(ship)) {
+    private void changeShipHealth(Ship ship, int difference) {
+        Player owner = null;
+        for (Player player : players) {
+            if (player.containsShip(ship)) {
+                owner = player;
+            }
+        }
+
+        if (owner == null) {
             return;
+        }
+        changeShipHealth(owner, ship, difference);
+    }
+
+    private void changeShipHealth(Player player, Ship ship, int difference) {
+        ship.changeHealth(difference);
+
+        if (difference > 0 && ship.getHealth() == difference) {
+            setShipAlive(player, ship);
+        } else if (difference < 0 && ship.isSunk()) {
+            setShipDead(player, ship);
+        }
+    }
+
+    private void setShipAlive(Player player, Ship ship) {
+        player.removeDeadShip(ship);
+
+        SailingResult result = SailingResult.SAILED;
+        for (Water water : field.getShipCells(ship)) {
+            if (water.canShipSailThrough(ship) == SailingResult.STUCK) {
+                result = SailingResult.STUCK;
+            }
+        }
+
+        if (result == SailingResult.SAILED) {
+            player.addActiveShip(ship);
+        } else {
+            player.addStuckShip(ship);
+        }
+    }
+
+    private void setShipDead(Player player, Ship ship) {
+        player.removeActiveShip(ship);
+        player.removeStuckShip(ship);
+
+        player.removeDeadShip(ship);
+    }
+
+    public int sailShip(Player player, Ship ship, int range) throws FieldException {
+        if (!player.containsActiveShip(ship)) {
+            return 0;
         }
 
         int stepsPossible = 0;
@@ -130,7 +178,7 @@ public class Game {
 
             switch (result) {
                 case BUMPED -> {
-                    ship.changeHealth(-1);
+                    changeShipHealth(player, ship, -1);
 
                     if (ship.isSunk()) {
                         player.removeActiveShip(ship);
@@ -146,21 +194,81 @@ public class Game {
 
                     stopped = true;
                 }
+                default -> stepsPossible++;
             }
-
-            stepsPossible++;
         }
 
         field.moveShipTo(ship, now, direction.getNegative());
+
+        return stepsPossible;
     }
 
-    public void sailShipBack(Player player, Ship ship, int range) {
+    public void sailShipBack(Player player, Ship ship, int range, int sailedRange) {
+        Water headCell = field.getShipHead(ship);
+        if (
+                sailedRange < Math.min(range, ship.getSailRange()) &&
+                headCell.canShipSailThrough(ship) != SailingResult.STUCK
+        ) {
+            changeShipHealth(player, ship, 1);
 
+            Cell next = headCell.getFromDirection(ship.getDirection());
+            if (next instanceof Water water) {
+                changeShipHealth(water.getShip(), 1);
+            }
+        }
+
+        CardinalDirection moveDir = ship.getDirection().getNegative();
+        for (int i = 0; i < sailedRange; i++) {
+            headCell = (Water) headCell.getFromDirection(moveDir);
+        }
+        field.moveShipTo(ship, headCell, moveDir);
     }
 
-    public void turnShip(Player player, Ship ship, boolean right) {
+    private void turnShipPositions(Ship ship, boolean right) {
+        int size = ship.getSize();
+        int upperRectSize = size / 2 + 1;
+
+        Cell newHead = field.getShipCells(ship).get(size / 2);
+
+        CardinalDirection newDirection = ship.getDirection().getRotated(right);
+
+        for (int i = 1; i < upperRectSize; i++) {
+            newHead = newHead.getFromDirection(newDirection);
+        }
+
+        field.moveShipTo(ship, newHead, newDirection.getNegative());
+        ship.setDirection(newDirection);
+    }
+
+    private SailingResult getShipSailingResultInRect(Ship ship, boolean right, boolean upper) {
+        int size = ship.getSize();
+        CardinalDirection direction = ship.getDirection();
+
+        Cell midCell = field.getShipCells(ship).get(size / 2);
+
+        int rectSize;
+        if (upper) {
+            rectSize = size / 2 + 1;
+        } else {
+            rectSize = size - size / 2;
+        }
+
+        CardinalDirection newDirection = direction.getRotated(right);
+
+        if (!upper) {
+            direction = direction.getNegative();
+            newDirection = newDirection.getNegative();
+        }
+
+        return field.getSailingResultInRect(
+                ship, midCell, rectSize,
+                newDirection, direction
+        );
+    }
+
+    public boolean turnShip(Player player, Ship ship, boolean right) {
         if (!player.containsActiveShip(ship)) {
-            return;
+            return false;
         }
 
         int size = ship.getSize();
@@ -168,44 +276,36 @@ public class Game {
 
         if (size == 1) {
             ship.setDirection(direction.getRotated(right));
+            return true;
+        }
+
+        SailingResult upperResult = getShipSailingResultInRect(ship, right, true);
+        SailingResult lowerResult = getShipSailingResultInRect(ship, right, false);
+
+        if (upperResult == SailingResult.SAILED && lowerResult == SailingResult.SAILED) {
+            turnShipPositions(ship, right);
+            return true;
+        }
+
+        if (upperResult == SailingResult.BUMPED || lowerResult == SailingResult.BUMPED) {
+            changeShipHealth(player, ship, -1);
+        }
+
+        return false;
+    }
+
+    public void turnShipBack(Player player, Ship ship, boolean right, boolean turned) {
+        if (turned) {
+            turnShipPositions(ship, !right);
             return;
         }
 
-        ArrayList<Water> cellPositions = field.getShipCells(ship);
-
-        Cell midCell = cellPositions.get(size / 2);
-
-        int upperRectSize = size / 2 + 1;
-        int lowerRectSize = size - size / 2;
-
-        CardinalDirection newDirection = direction.getRotated(right);
-
-        SailingResult upperResult = field.getSailingResultInRect(
-                ship, midCell, upperRectSize,
-                newDirection, direction
-        );
-        SailingResult lowerResult = field.getSailingResultInRect(
-                ship, midCell, lowerRectSize,
-                newDirection.getNegative(), direction.getNegative()
-        );
+        SailingResult upperResult = getShipSailingResultInRect(ship, right, true);
+        SailingResult lowerResult = getShipSailingResultInRect(ship, right, false);
 
         if (upperResult == SailingResult.BUMPED || lowerResult == SailingResult.BUMPED) {
-            ship.changeHealth(-1);
+            changeShipHealth(player, ship, 1);
         }
-
-        if (upperResult == SailingResult.SAILED && lowerResult == SailingResult.SAILED) {
-            Cell newHead = midCell;
-            for (int i = 1; i < upperRectSize; i++) {
-                newHead = newHead.getFromDirection(newDirection);
-            }
-
-            field.moveShipTo(ship, newHead, newDirection.getNegative());
-            ship.setDirection(newDirection);
-        }
-    }
-
-    public void turnShipBack(Player player, Ship ship, boolean right) {
-
     }
 
     public void shipShoot(Player player, Ship ship, Cell target) {
@@ -223,13 +323,25 @@ public class Game {
             Ship targetShip = water.getShip();
 
             if (targetShip != null) {
-                targetShip.changeHealth(-1);
+                changeShipHealth(targetShip, -1);
             }
         }
     }
 
-    public void shipUndoShoot(Player player, Ship ship, Cell target) {
+    public void shipUndoShoot(Ship ship, Cell target) {
+        Vector2 shipHeadPos = field.getShipHead(ship).getPosition();
 
+        if (shipHeadPos.distanceTo(target.getPosition()) - ship.getFiringRange() > EPSILON) {
+            return;
+        }
+
+        if (target instanceof Water water) {
+            Ship targetShip = water.getShip();
+
+            if (targetShip != null) {
+                changeShipHealth(targetShip, 1);
+            }
+        }
     }
 
     @Override

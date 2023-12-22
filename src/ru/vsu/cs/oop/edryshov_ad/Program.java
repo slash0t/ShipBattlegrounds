@@ -9,25 +9,28 @@ import ru.vsu.cs.oop.edryshov_ad.game.player.Player;
 import ru.vsu.cs.oop.edryshov_ad.game.player.SailingForwardController;
 import ru.vsu.cs.oop.edryshov_ad.game.player.TurningAroundController;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 
 public class Program {
     public static void main(String[] args) {
         Game game = getExampleGame(3);
 
-        int maxCount = 50;
-        int i = 0;
-
         System.out.println(game);
 
-        while (game.getGameState() == GameState.ONGOING && i < maxCount) {
-            game.playStepForward();
+        Scanner scanner = new Scanner(System.in);
+
+        String query;
+        do {
+            query = scanner.next();
+
+            if (query.equals("n")) {
+                game.playStepForward();
+            } else if (query.equals("b")) {
+                game.playStepBack();
+            }
+
             System.out.println(game);
-            i++;
-        }
+        } while (!query.equals("exit") && game.getGameState() == GameState.ONGOING);
 
         System.out.println(game.getWinners());
     }
