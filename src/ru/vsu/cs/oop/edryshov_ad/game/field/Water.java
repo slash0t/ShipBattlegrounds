@@ -18,10 +18,6 @@ public class Water extends Cell {
         return depth;
     }
 
-    public Ship getShip() {
-        return ship;
-    }
-
     public void removeShip() {
         this.ship = null;
     }

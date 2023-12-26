@@ -10,6 +10,7 @@ public class Field {
     private final Cell startCell;
 
     private final Map<Ship, ArrayList<Water>> shipMap;
+    private final Map<Water, Ship> waterMap;
 
     private final int width;
     private final int height;
@@ -17,6 +18,7 @@ public class Field {
     public Field(Cell startCell, int width, int height) {
         this.startCell = startCell;
         this.shipMap = new TreeMap<>();
+        this.waterMap = new TreeMap<>();
         this.width = width;
         this.height = height;
     }
@@ -33,6 +35,10 @@ public class Field {
         return shipMap.get(ship).get(0);
     }
 
+    public Ship getShipOnWater(Water water) {
+        return waterMap.get(water);
+    }
+
     public int getWidth() {
         return width;
     }
@@ -46,9 +52,10 @@ public class Field {
             return;
         }
 
-        for (Water water : shipMap.get(ship)) {
-            water.removeShip();
-        }
+        ArrayList<Water> positions = shipMap.get(ship);
+
+        positions.forEach(Water::removeShip);
+        positions.forEach(waterMap::remove);
 
         shipMap.remove(ship);
     }
@@ -58,6 +65,7 @@ public class Field {
         cells.add(water);
         water.setShip(ship);
         shipMap.put(ship, cells);
+        waterMap.put(water, ship);
     }
 
     public Cell getCellFromCoordinates(int x, int y) {
@@ -125,7 +133,7 @@ public class Field {
             Cell curr = anchor;
             for (int j = 0; j < width; j++) {
                 if (curr instanceof Water water) {
-                    Ship ship = water.getShip();
+                    Ship ship = getShipOnWater(water);
                     if (ship == null) {
                         sb.append("\uD83C\uDF0A");
                     } else {

@@ -194,7 +194,7 @@ public class Game {
 
             Cell next = headCell.getFromDirection(ship.getDirection());
             if (next instanceof Water water) {
-                changeShipHealth(water.getShip(), 1);
+                changeShipHealth(field.getShipOnWater(water), 1);
             }
         }
 
@@ -301,7 +301,7 @@ public class Game {
         }
 
         if (target instanceof Water water) {
-            Ship targetShip = water.getShip();
+            Ship targetShip = field.getShipOnWater(water);
 
             if (targetShip != null) {
                 changeShipHealth(targetShip, -1);
@@ -317,7 +317,7 @@ public class Game {
         }
 
         if (target instanceof Water water) {
-            Ship targetShip = water.getShip();
+            Ship targetShip = field.getShipOnWater(water);
 
             if (targetShip != null) {
                 changeShipHealth(targetShip, 1);
