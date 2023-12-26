@@ -26,8 +26,7 @@ public class Game {
         this.field = field;
         this.players = players;
 
-        CommandCreator creator = new CommandCreator(this);
-        players.forEach(player -> player.setCommandCreator(creator));
+        players.forEach(player -> player.setCommandCreator(new CommandCreator(this, player)));
 
         this.commandsHistory = new Stack<>();
         this.upcomingCommands = new Stack<>();

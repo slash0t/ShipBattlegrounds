@@ -75,20 +75,8 @@ public class Player {
                 deadShips.contains(ship);
     }
 
-    public TreeSet<Ship> getActiveShips() {
-        return activeShips;
-    }
-
-    public TreeSet<Ship> getStuckShips() {
-        return stuckShips;
-    }
-
-    public TreeSet<Ship> getDeadShips() {
-        return deadShips;
-    }
-
     public Queue<ShipCommand> doMove(Field field) {
-        return controller.doMove(this, commandCreator, field);
+        return controller.doMove(new TreeSet<>(activeShips), new TreeSet<>(stuckShips), commandCreator, field);
     }
 
     public boolean lost() {
