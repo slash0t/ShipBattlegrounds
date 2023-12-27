@@ -12,6 +12,7 @@ import java.util.Queue;
 public class TurningAroundController implements PlayerController {
     @Override
     public Queue<ShipCommand> doMove(
+            Player player,
             Collection<Ship> activeShips, Collection<Ship> stuckShips,
             CommandCreator commandCreator, Field field
     ) {

@@ -22,4 +22,10 @@ public class TurnCommand extends ShipCommand {
     void undo(Game game) {
         game.turnShipBack(getPlayer(), getShip(), right, turned);
     }
+
+    @Override
+    public String toString() {
+        String turn = right ? "вправо" : "влево";
+        return String.format("Игрок %s выстрелил кораблем %s %s", getPlayer(), getShip(), turn);
+    }
 }

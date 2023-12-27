@@ -6,24 +6,35 @@ import ru.vsu.cs.oop.edryshov_ad.game.field.Rock;
 import ru.vsu.cs.oop.edryshov_ad.game.field.Water;
 import ru.vsu.cs.oop.edryshov_ad.game.player.*;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public final class GameParser {
-    private GameParser() {}
-
-    private static final List<PlayerController> controllers = List.of(
+public class GameParser {
+    private static final List<PlayerController> DEFAULT_CONTROLLERS = List.of(
             new SailingForwardController(),
             new TurningAroundController()
     );
 
-    public static Game parseGame(String path) {
+    private final List<PlayerController> controllers;
+    private final boolean orderedPick;
+
+    private GameParser(Builder builder) {
+        this.controllers = builder.controllers;
+        this.orderedPick = builder.orderedPick;
+    }
+
+    public Game parseGame(String path) {
+        return parseGame(new File(path));
+    }
+
+    public Game parseGame(File file) {
         Scanner scanner;
         try {
-            scanner = new Scanner(new FileInputStream(path));
+            scanner = new Scanner(new FileInputStream(file));
         } catch (FileNotFoundException fileNotFoundException) {
             System.out.println("Файл не найден");
             return null;
@@ -39,10 +50,10 @@ public final class GameParser {
         int playerCount = scanner.nextInt();
         Player[] players = new Player[playerCount];
 
-        Random random = new Random();
         for (int i = 0; i < playerCount; i++) {
+            int index = orderedPick ? getControllerIndex(i) : getRandomizedControllerIndex();
             players[i] = new Player(
-                    i, controllers.get(random.nextInt(controllers.size()))
+                    i, controllers.get(index)
             );
         }
 
@@ -56,7 +67,16 @@ public final class GameParser {
         return new Game(field, new LinkedList<>(List.of(players)));
     }
 
-    private static Field parseField(Scanner scanner, int width, int height) {
+    private int getControllerIndex(int i) {
+        return i % controllers.size();
+    }
+
+    private int getRandomizedControllerIndex() {
+        Random random = new Random();
+        return random.nextInt(controllers.size());
+    }
+
+    private Field parseField(Scanner scanner, int width, int height) {
         if (width < 1 || height < 1) {
             return null;
         }
@@ -98,7 +118,7 @@ public final class GameParser {
         return new Field(upperAnchor, width, height);
     }
 
-    private static void parseShips(Scanner scanner, Field field, Player[] players, int count) {
+    private void parseShips(Scanner scanner, Field field, Player[] players, int count) {
         for (int i = 0; i < count; i++) {
             String line = scanner.nextLine();
 
@@ -158,6 +178,35 @@ public final class GameParser {
             );
 
             players[map.get("TO_PLAYER") - 1].addActiveShip(ship);
+        }
+    }
+
+    public static class Builder {
+        private boolean orderedPick;
+        private List<PlayerController> controllers;
+
+        public Builder() {
+            orderedPick = true;
+            controllers = DEFAULT_CONTROLLERS;
+        }
+
+        public Builder withControllers(List<PlayerController> controllers) {
+            this.controllers = controllers;
+            return this;
+        }
+
+        public Builder withOrderedPick() {
+            this.orderedPick = true;
+            return this;
+        }
+
+        public Builder withRandomizedPick() {
+            this.orderedPick = false;
+            return this;
+        }
+
+        public GameParser build() {
+            return new GameParser(this);
         }
     }
 }

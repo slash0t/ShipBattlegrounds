@@ -76,7 +76,11 @@ public class Player {
     }
 
     public Queue<ShipCommand> doMove(Field field) {
-        return controller.doMove(new TreeSet<>(activeShips), new TreeSet<>(stuckShips), commandCreator, field);
+        return controller.doMove(
+                this,
+                new TreeSet<>(activeShips), new TreeSet<>(stuckShips),
+                commandCreator, field
+        );
     }
 
     public boolean lost() {

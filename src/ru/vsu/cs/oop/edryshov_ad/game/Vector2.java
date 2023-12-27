@@ -1,6 +1,8 @@
 package ru.vsu.cs.oop.edryshov_ad.game;
 
 public class Vector2 {
+    public static final double EPSILON = 1e-6f;
+
     private final int x;
     private final int y;
 

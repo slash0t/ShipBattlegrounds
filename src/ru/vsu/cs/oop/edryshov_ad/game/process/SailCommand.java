@@ -22,4 +22,9 @@ public class SailCommand extends ShipCommand {
     void undo(Game game) {
         game.sailShipBack(getPlayer(), getShip(), range, sailedRange);
     }
+
+    @Override
+    public String toString() {
+        return String.format("Игрок %s проплыл кораблем %s на %d", getPlayer(), getShip(), range);
+    }
 }

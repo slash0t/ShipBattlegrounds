@@ -22,4 +22,9 @@ public class ShootCommand extends ShipCommand {
     void undo(Game game) {
         game.shipUndoShoot(getShip(), target);
     }
+
+    @Override
+    public String toString() {
+        return String.format("Игрок %s выстрелил кораблем %s в %s", getPlayer(), getShip(), target);
+    }
 }

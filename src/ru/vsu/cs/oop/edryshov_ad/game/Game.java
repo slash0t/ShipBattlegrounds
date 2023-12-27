@@ -11,8 +11,6 @@ import ru.vsu.cs.oop.edryshov_ad.game.process.ShipCommand;
 import java.util.*;
 
 public class Game {
-    private final double EPSILON = 1e-6f;
-
     private final Field field;
     private final Queue<Player> players;
     private final List<Player> winners;
@@ -79,6 +77,10 @@ public class Game {
     }
 
     public void playStepForward() {
+        if (gameState != GameState.ONGOING || players.size() == 0) {
+            return;
+        }
+
         if (upcomingCommands.isEmpty()) {
             int stepsPlayed = playPlayerStep();
 
@@ -220,32 +222,6 @@ public class Game {
         ship.setDirection(newDirection);
     }
 
-    private SailingResult getShipSailingResultInRect(Ship ship, boolean right, boolean upper) {
-        int size = ship.getSize();
-        CardinalDirection direction = ship.getDirection();
-
-        Cell midCell = field.getShipCells(ship).get(size / 2);
-
-        int rectSize;
-        if (upper) {
-            rectSize = size / 2 + 1;
-        } else {
-            rectSize = size - size / 2;
-        }
-
-        CardinalDirection newDirection = direction.getRotated(right);
-
-        if (!upper) {
-            direction = direction.getNegative();
-            newDirection = newDirection.getNegative();
-        }
-
-        return field.getSailingResultInRect(
-                ship, midCell, rectSize,
-                newDirection, direction
-        );
-    }
-
     public boolean turnShip(Player player, Ship ship, boolean right) {
         if (!player.containsActiveShip(ship)) {
             return false;
@@ -259,15 +235,14 @@ public class Game {
             return true;
         }
 
-        SailingResult upperResult = getShipSailingResultInRect(ship, right, true);
-        SailingResult lowerResult = getShipSailingResultInRect(ship, right, false);
+        SailingResult turnResult = field.getShipTurnSailingResult(ship, right);
 
-        if (upperResult == SailingResult.SAILED && lowerResult == SailingResult.SAILED) {
+        if (turnResult == SailingResult.SAILED) {
             turnShipPositions(ship, right);
             return true;
         }
 
-        if (upperResult == SailingResult.BUMPED || lowerResult == SailingResult.BUMPED) {
+        if (turnResult == SailingResult.BUMPED) {
             changeShipHealth(player, ship, -1);
         }
 
@@ -280,10 +255,9 @@ public class Game {
             return;
         }
 
-        SailingResult upperResult = getShipSailingResultInRect(ship, right, true);
-        SailingResult lowerResult = getShipSailingResultInRect(ship, right, false);
+        SailingResult turnResult = field.getShipTurnSailingResult(ship, right);
 
-        if (upperResult == SailingResult.BUMPED || lowerResult == SailingResult.BUMPED) {
+        if (turnResult == SailingResult.BUMPED) {
             changeShipHealth(player, ship, 1);
         }
     }
@@ -295,7 +269,7 @@ public class Game {
 
         Vector2 shipHeadPos = field.getShipHead(ship).getPosition();
 
-        if (shipHeadPos.distanceTo(target.getPosition()) - ship.getFiringRange() > EPSILON) {
+        if (shipHeadPos.distanceTo(target.getPosition()) - ship.getFiringRange() > Vector2.EPSILON) {
             return;
         }
 
@@ -311,7 +285,7 @@ public class Game {
     public void shipUndoShoot(Ship ship, Cell target) {
         Vector2 shipHeadPos = field.getShipHead(ship).getPosition();
 
-        if (shipHeadPos.distanceTo(target.getPosition()) - ship.getFiringRange() > EPSILON) {
+        if (shipHeadPos.distanceTo(target.getPosition()) - ship.getFiringRange() > Vector2.EPSILON) {
             return;
         }
 
@@ -326,6 +300,9 @@ public class Game {
 
     @Override
     public String toString() {
+        if (commandsHistory.size() > 0) {
+            return String.format("%s\n%s", field, commandsHistory.peek());
+        }
         return field.toString();
     }
 

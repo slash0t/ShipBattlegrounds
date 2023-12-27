@@ -35,4 +35,9 @@ public abstract class ShipCommand {
     }
 
     abstract void undo(Game game);
+
+    @Override
+    public String toString() {
+        return String.format("Комманда над %s от %s", ship.toString(), player.toString());
+    }
 }

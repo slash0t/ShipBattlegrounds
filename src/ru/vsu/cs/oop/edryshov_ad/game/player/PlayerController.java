@@ -10,6 +10,7 @@ import java.util.Queue;
 
 public interface PlayerController {
     Queue<ShipCommand> doMove(
+            Player player,
             Collection<Ship> activeShips, Collection<Ship> stuckShips,
             CommandCreator commandCreator, Field field
     );

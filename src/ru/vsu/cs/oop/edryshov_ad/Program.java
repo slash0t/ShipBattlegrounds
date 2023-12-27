@@ -1,12 +1,24 @@
 package ru.vsu.cs.oop.edryshov_ad;
 
 import ru.vsu.cs.oop.edryshov_ad.game.*;
+import ru.vsu.cs.oop.edryshov_ad.game.player.DefaultPlayerController;
+import ru.vsu.cs.oop.edryshov_ad.game.player.SailingForwardController;
+import ru.vsu.cs.oop.edryshov_ad.game.player.TurningAroundController;
 
 import java.util.*;
 
 public class Program {
     public static void main(String[] args) {
-        Game game = GameParser.parseGame("games/game1.txt");
+        GameParser parser = new GameParser.Builder().
+                withOrderedPick().
+                withControllers(List.of(
+//                        new SailingForwardController(),
+//                        new TurningAroundController(),
+                        new DefaultPlayerController()
+                ))
+                .build();
+
+        Game game = parser.parseGame("games/game2.txt");
 
         if (game == null) {
             System.out.println("Не удалось создать игру");
@@ -28,8 +40,12 @@ public class Program {
             }
 
             System.out.println(game);
-        } while (!query.equals("exit") && game.getGameState() == GameState.ONGOING);
 
-        System.out.println(game.getWinners());
+            if (game.getGameState() != GameState.ONGOING) {
+                System.out.printf("Выиграл игрок %s%n", game.getWinners().get(0));
+            }
+        } while (!query.equals("exit"));
+
+        System.out.println();
     }
 }

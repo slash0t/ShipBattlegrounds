@@ -39,6 +39,10 @@ public class Field {
         return waterMap.get(water);
     }
 
+    public Set<Map.Entry<Water, Ship>> waterShipEntry() {
+        return waterMap.entrySet();
+    }
+
     public int getWidth() {
         return width;
     }
@@ -99,7 +103,63 @@ public class Field {
         newPositions.forEach(water -> addShipCoordinate(ship, water));
     }
 
-    public SailingResult getSailingResultInRect(
+    public SailingResult getShipSailResult(Ship ship, int range) {
+        Cell curr = getShipHead(ship);
+
+        SailingResult result = SailingResult.SAILED;
+
+        for (int i = 0; i < range && result == SailingResult.SAILED; i++) {
+            curr = curr.getFromDirection(ship.getDirection());
+
+            result = curr.canShipSailThrough(ship);
+        }
+        return result;
+    }
+
+    public SailingResult getShipTurnSailingResult(Ship ship, boolean right)  {
+        SailingResult upperResult = getShipSailingResultInRect(ship, right, true);
+        SailingResult lowerResult = getShipSailingResultInRect(ship, right, false);
+
+        SailingResult result = SailingResult.SAILED;
+
+        if (upperResult == SailingResult.STUCK || lowerResult == SailingResult.STUCK) {
+            result = SailingResult.STUCK;
+        }
+
+        if (upperResult == SailingResult.BUMPED || lowerResult == SailingResult.BUMPED) {
+            result = SailingResult.BUMPED;
+        }
+
+        return result;
+    }
+
+    private SailingResult getShipSailingResultInRect(Ship ship, boolean right, boolean upper) {
+        int size = ship.getSize();
+        CardinalDirection direction = ship.getDirection();
+
+        Cell midCell = getShipCells(ship).get(size / 2);
+
+        int rectSize;
+        if (upper) {
+            rectSize = size / 2 + 1;
+        } else {
+            rectSize = size - size / 2;
+        }
+
+        CardinalDirection newDirection = direction.getRotated(right);
+
+        if (!upper) {
+            direction = direction.getNegative();
+            newDirection = newDirection.getNegative();
+        }
+
+        return getSailingResultInRect(
+                ship, midCell, rectSize,
+                newDirection, direction
+        );
+    }
+
+    private SailingResult getSailingResultInRect(
             Ship ship, Cell startCell,
             int size, CardinalDirection horizontalDir, CardinalDirection verticalDir
     ) {
@@ -127,10 +187,11 @@ public class Field {
             anchor = anchor.getTop();
         }
 
-        StringBuilder sb = new StringBuilder();
+        StringJoiner sj = new StringJoiner("\n");
 
         for (int i = 0; i < height; i++) {
             Cell curr = anchor;
+            StringBuilder sb = new StringBuilder();
             for (int j = 0; j < width; j++) {
                 if (curr instanceof Water water) {
                     Ship ship = getShipOnWater(water);
@@ -144,14 +205,14 @@ public class Field {
                         }
                     }
                 } else {
-                    sb.append("\uD83D\uDEAB");
+                    sb.append("\uD83C\uDFD4");
                 }
                 curr = curr.getRight();
             }
             anchor = anchor.getBottom();
-            sb.append("\n");
+            sj.add(sb);
         }
 
-        return sb.toString();
+        return sj.toString();
     }
 }
