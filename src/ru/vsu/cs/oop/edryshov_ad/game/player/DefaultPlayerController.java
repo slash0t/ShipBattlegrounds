@@ -171,7 +171,7 @@ public class DefaultPlayerController implements PlayerController {
             return commandCreator.createTurnCommand(ship, true);
         }
 
-        CardinalDirection turnLeft = direction.getRight();
+        CardinalDirection turnLeft = direction.getLeft();
         if (
                 field.getShipTurnSailingResult(ship, false) == SailingResult.SAILED &&
                 turnedTowardsCenter.apply(turnLeft)

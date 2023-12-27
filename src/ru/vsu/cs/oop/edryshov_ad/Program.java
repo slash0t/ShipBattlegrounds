@@ -18,7 +18,7 @@ public class Program {
                 ))
                 .build();
 
-        Game game = parser.parseGame("games/game2.txt");
+        Game game = parser.parseGame("games/game4.txt");
 
         if (game == null) {
             System.out.println("Не удалось создать игру");
@@ -40,10 +40,6 @@ public class Program {
             }
 
             System.out.println(game);
-
-            if (game.getGameState() != GameState.ONGOING) {
-                System.out.printf("Выиграл игрок %s%n", game.getWinners().get(0));
-            }
         } while (!query.equals("exit"));
 
         System.out.println();

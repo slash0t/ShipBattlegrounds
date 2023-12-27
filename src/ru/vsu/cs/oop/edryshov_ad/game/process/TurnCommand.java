@@ -26,6 +26,6 @@ public class TurnCommand extends ShipCommand {
     @Override
     public String toString() {
         String turn = right ? "вправо" : "влево";
-        return String.format("Игрок %s выстрелил кораблем %s %s", getPlayer(), getShip(), turn);
+        return String.format("Игрок %s повернул кораблем %s %s", getPlayer(), getShip(), turn);
     }
 }
