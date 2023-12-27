@@ -8,7 +8,7 @@ import ru.vsu.cs.oop.edryshov_ad.game.process.ShipCommand;
 import java.util.Queue;
 import java.util.TreeSet;
 
-public class Player {
+public class Player implements Comparable<Player> {
     private final int id;
 
     private final PlayerController controller;
@@ -85,6 +85,11 @@ public class Player {
 
     public boolean lost() {
         return activeShips.size() == 0 && stuckShips.size() == 0;
+    }
+
+    @Override
+    public int compareTo(Player o) {
+        return Integer.compare(id, o.id);
     }
 
     @Override

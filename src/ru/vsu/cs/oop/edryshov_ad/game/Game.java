@@ -13,6 +13,7 @@ import java.util.*;
 public class Game {
     private final Field field;
     private final Queue<Player> players;
+    private final Set<Player> lostPlayers;
     private final List<Player> winners;
 
     private final Stack<ShipCommand> commandsHistory;
@@ -31,6 +32,7 @@ public class Game {
 
         this.gameState = GameState.ONGOING;
         this.winners = new LinkedList<>();
+        this.lostPlayers = new TreeSet<>();
     }
 
     public GameState getGameState() {
@@ -45,6 +47,8 @@ public class Game {
         if (gameState != GameState.ONGOING || players.size() == 0) {
             return 0;
         }
+
+        Set<Player> playersAlive = new TreeSet<>(players);
 
         Player player = players.poll();
 
@@ -61,6 +65,7 @@ public class Game {
             winners.add(players.peek());
         } else if (players.size() == 0) {
             gameState = GameState.ENDED_WITH_DRAW;
+            winners.addAll(playersAlive);
         }
 
         return commandsQueue.size();
@@ -77,11 +82,11 @@ public class Game {
     }
 
     public void playStepForward() {
-        if (gameState != GameState.ONGOING || players.size() == 0) {
-            return;
-        }
-
         if (upcomingCommands.isEmpty()) {
+            if (players.size() == 0) {
+                return;
+            }
+
             int stepsPlayed = playPlayerStep();
 
             for (int i = 0; i < stepsPlayed - 1; i++) {
@@ -101,10 +106,19 @@ public class Game {
                 filter(p -> p.containsShip(ship)).
                 findAny();
 
+        Optional<Player> lostOwner = lostPlayers.stream().
+                filter(p -> p.containsShip(ship)).
+                findAny();
+
         if (owner.isEmpty()) {
-            return;
+            if (lostOwner.isEmpty()) {
+                return;
+            }
+
+            changeShipHealth(lostOwner.get(), ship, difference);
+        } else {
+            changeShipHealth(owner.get(), ship, difference);
         }
-        changeShipHealth(owner.get(), ship, difference);
     }
 
     private void changeShipHealth(Player player, Ship ship, int difference) {
@@ -136,10 +150,11 @@ public class Game {
         player.removeActiveShip(ship);
         player.removeStuckShip(ship);
 
-        player.removeDeadShip(ship);
+        player.addDeadShip(ship);
 
         if (player.lost()) {
             players.remove(player);
+            lostPlayers.add(player);
         }
     }
 
@@ -165,6 +180,10 @@ public class Game {
                     if (ship.isSunk()) {
                         player.removeActiveShip(ship);
                         player.addDeadShip(ship);
+                    }
+
+                    if (now instanceof Water water) {
+                        changeShipHealth(field.getShipOnWater(water), -1);
                     }
 
                     stopped = true;
@@ -300,10 +319,25 @@ public class Game {
 
     @Override
     public String toString() {
+        StringJoiner sj = new StringJoiner("\n");
+
+        sj.add(field.toString());
+
         if (commandsHistory.size() > 0) {
-            return String.format("%s\n%s", field, commandsHistory.peek());
+            sj.add(commandsHistory.peek().toString());
         }
-        return field.toString();
+
+        if (gameState == GameState.ENDED_WITH_VICTORY) {
+            sj.add(String.format("Выиграл игрок: %s", winners.get(0)));
+        }
+        if (gameState == GameState.ENDED_WITH_DRAW) {
+            StringJoiner players = new StringJoiner(", ");
+            winners.forEach(player -> players.add(player.toString()));
+
+            sj.add(String.format("Ничья между: %s", players));
+        }
+
+        return sj.toString();
     }
 
     //TODO сохранение игры

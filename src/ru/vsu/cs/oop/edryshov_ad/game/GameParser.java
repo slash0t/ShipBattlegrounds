@@ -53,7 +53,7 @@ public class GameParser {
         for (int i = 0; i < playerCount; i++) {
             int index = orderedPick ? getControllerIndex(i) : getRandomizedControllerIndex();
             players[i] = new Player(
-                    i, controllers.get(index)
+                    i + 1, controllers.get(index)
             );
         }
 
